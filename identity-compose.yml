@@ -1,0 +1,46 @@
+# This docker-compose.yml file is used to spin up an Alfresco Content Services (ACS) trial cluster on a local host or on a server and it requires a minimum of 16GB Memory to distribute among containers.
+
+# To use this file to create a local installation of Alfresco Content Services, you need to have Docker Compose installed [https://docs.docker.com/compose/install/].
+# Navigate to the folder where this file is located, and issue the following commands:
+#
+#     docker login quay.io -u="alfresco+acs_v6_trial" -p="MDF9RNGUJPKZ83KK8UVGUVWO9AYKUZ0VN6WG5VOOCUT6BX19JJLU5ZL0HKU7N20C"
+#     docker-compose up
+#
+
+# For additional information about using this docker-compose file, please see:
+# https://github.com/Alfresco/acs-deployment/blob/master/docs/docker-compose-deployment.md
+
+# You may wish to limit container memory and assign a certain percentage to JVM. There are couple of ways to allocate JVM Memory for ACS Containers
+# For example: 'JAVA_OPTS: "$JAVA_OPTS -XX:+PrintFlagsFinal -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"'
+# If container memory is not explicitly set, then the above flags will default max heap to 1/4th of container's memory.
+version: "2"
+
+services:
+    postgres:
+        image: postgres:11.6
+        mem_limit: 512m
+        environment:
+            - POSTGRES_PASSWORD=alfresco
+            - POSTGRES_USER=alfresco
+            - POSTGRES_DB=keycloak
+        command: postgres -c max_connections=300 -c log_min_messages=LOG
+        ports:
+            - 5432:5432
+        volumes:
+            - ./data/keycloak-postgres:/var/lib/postgresql/data
+
+    identity-service:
+        image: jboss/keycloak:8.0.0
+        environment:
+            DB_VENDOR: POSTGRES
+            DB_ADDR: postgres
+            DB_DATABASE: keycloak
+            DB_USER: alfresco
+            DB_SCHEMA: public
+            DB_PASSWORD: alfresco
+            KEYCLOAK_USER: admin
+            KEYCLOAK_PASSWORD: admin
+        ports:
+            - 8888:8080
+        depends_on:
+            - postgres
