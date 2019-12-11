@@ -16,7 +16,7 @@
 version: "2"
 
 services:
-    postgres:
+    keycloak-postgres:
         image: postgres:11.6
         mem_limit: 512m
         environment:
@@ -33,7 +33,7 @@ services:
         image: jboss/keycloak:8.0.0
         environment:
             DB_VENDOR: POSTGRES
-            DB_ADDR: postgres
+            DB_ADDR: keycloak-postgres
             DB_DATABASE: keycloak
             DB_USER: alfresco
             DB_SCHEMA: public
@@ -43,4 +43,4 @@ services:
         ports:
             - 8888:8080
         depends_on:
-            - postgres
+            - keycloak-postgres
